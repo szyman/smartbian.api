@@ -15,6 +15,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using System.Net;
+using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Http;
+using SmartRoomsApp.API.Helpers;
 
 namespace SmartRoomsApp.API
 {
@@ -49,19 +53,31 @@ namespace SmartRoomsApp.API
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
+            //TODO: Move to development statement
+            app.UseCors(
+                options => options.WithOrigins("http://localhost:8080")
+                    .AllowAnyMethod()
+                    .AllowAnyHeader()
+            );
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                app.UseCors(
-                    options => options.WithOrigins("http://localhost:8080")
-                        .AllowAnyMethod()
-                        .AllowAnyHeader()
-                );
             }
             else
             {
-                app.UseHsts();
-                app.UseHttpsRedirection();
+                //TODO: Uncomment this lines
+                //app.UseHsts();
+                //app.UseHttpsRedirection();
+                app.UseExceptionHandler(builder => {
+                    builder.Run(async context => {
+                        context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                        var error = context.Features.Get<IExceptionHandlerFeature>();
+                        if (error != null) {
+                            context.Response.AddApplicationError(error.Error.Message);
+                            await context.Response.WriteAsync(error.Error.Message);
+                        }
+                    });
+                });
             }
             app.UseAuthentication();
             app.UseMvc();
