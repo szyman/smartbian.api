@@ -1,15 +1,14 @@
 using System.Collections.Generic;
+using SmartRoomsApp.API.Models;
 
-namespace SmartRoomsApp.API.Models
+namespace SmartRoomsApp.API.Dtos
 {
-    public class User
+    public class UserForDetailedDto
     {
         public int Id { get; set; }
         public string Username { get; set; }
-        public byte[] PasswordHash { get; set; }
-        public byte[] PasswordSalt { get; set; }
         public string RaspHost { get; set; }
         public string RaspUsername { get; set; }
-        public ICollection<Block> Blocks { get; set; }
+        public ICollection<BlocksForDetailedDto> Blocks { get; set; }
     }
 }
