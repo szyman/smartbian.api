@@ -11,6 +11,7 @@ namespace SmartRoomsApp.API.Helpers
             CreateMap<User, UserForListDto>();
             CreateMap<User, UserForDetailedDto>();
             CreateMap<Block, BlocksForDetailedDto>();
+            CreateMap<UserForUpdateDto, User>();
         }
     }
 }
