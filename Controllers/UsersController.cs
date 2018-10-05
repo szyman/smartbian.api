@@ -47,11 +47,11 @@ namespace SmartRoomsApp.API.Controllers
                 return Unauthorized();
 
             var userFromRepo = await _repo.GetUser(id);
-
-            _mapper.Map(userForUpdateDto, userFromRepo);
+            var updatedUser = _mapper.Map(userForUpdateDto, userFromRepo);
+            var userToReturn = _mapper.Map<UserForDetailedDto>(updatedUser);
 
             if (await _repo.SaveAll())
-                return NoContent();
+                return Ok(userToReturn);
 
             throw new System.Exception($"Updating user {id} failed on save");
         }
