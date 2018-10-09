@@ -22,7 +22,7 @@ namespace SmartRoomsApp.API.Controllers
                     SshCommand command = client.CreateCommand("python -V");
                     command.Execute();
 
-                    return Ok(command.Result);
+                    return Ok(command.Result + command.Error);
                 }
                 catch (SocketException ex)
                 {
