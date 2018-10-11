@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Net.Sockets;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -11,15 +12,20 @@ namespace SmartRoomsApp.API.Controllers
     [ApiController]
     public class ControlPanelController : ControllerBase
     {
-        [HttpPost("testConnection")]
-        public IActionResult testConnection(ControlPanelForLoginDto controlPanelForLogin)
+        private static readonly Dictionary<string, string> _COMMAND_TYPES = new Dictionary<string, string>()
+        {
+            { "test_connection", "python -V" }
+        };
+
+        [HttpPost("executeCommand")]
+        public IActionResult executeCommand(ControlPanelForLoginDto controlPanelForLogin)
         {
             using (var client = new SshClient(controlPanelForLogin.Host, controlPanelForLogin.Username, controlPanelForLogin.Password))
             {
                 try
                 {
                     client.Connect();
-                    SshCommand command = client.CreateCommand("python -V");
+                    SshCommand command = client.CreateCommand(_COMMAND_TYPES[controlPanelForLogin.CommandType]);
                     command.Execute();
 
                     return Ok(command.Result + command.Error);
