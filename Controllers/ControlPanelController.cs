@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -17,7 +18,7 @@ namespace SmartRoomsApp.API.Controllers
         private static readonly Dictionary<string, string> _COMMAND_TYPES = new Dictionary<string, string>()
         {
             { "test_connection", "python -V" },
-            { "run_switch", "python test.py" }
+            { "run_switch", "python switch_lamp.py" }
         };
 
         [HttpPost("executeCommand")]
@@ -47,8 +48,8 @@ namespace SmartRoomsApp.API.Controllers
             {
                 try
                 {
-                    string scriptFileName = "test.py";
-                    bool isFileCreated = false;
+                    string scriptFileName = "switch_lamp.py";
+                    bool isFileExist = false;
                     client.Connect();
                     IEnumerable<string> files = client.ListDirectory("").Select(s => s.Name);
 
@@ -56,25 +57,26 @@ namespace SmartRoomsApp.API.Controllers
                     {
                         if (fileName == scriptFileName)
                         {
-                            isFileCreated = true;
+                            isFileExist = true;
                             break;
                         }
                     }
 
-                    if (!isFileCreated)
+                    using (var fileStream = new FileStream("./Assets/Scripts/switch_lamp.py", FileMode.Open, FileAccess.Read))
                     {
-                        var stream = new MemoryStream();
-                        var writer = new StreamWriter(stream);
-                        writer.Write("print(\"This line will be printed.\")");
-
-                        writer.Flush();
-                        stream.Position = 0;
-
-                        client.UploadFile(stream, "test.py");
+                        fileStream.Flush();
+                        fileStream.Position = 0;
+                        client.UploadFile(fileStream, "switch_lamp.py");
+                        fileStream.Close();
                     }
-                    return Ok("File: " + scriptFileName + " exist: " + isFileCreated);
+
+                    return Ok("File: " + scriptFileName + " Replaced: " + isFileExist);
                 }
                 catch (SocketException ex)
+                {
+                    return BadRequest(ex.Message);
+                }
+                catch (Exception ex)
                 {
                     return BadRequest(ex.Message);
                 }
