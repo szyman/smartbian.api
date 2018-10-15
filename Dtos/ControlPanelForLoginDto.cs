@@ -6,5 +6,6 @@ namespace SmartRoomsApp.API.Dtos
         public string Username { get; set; }
         public string Password { get; set; }
         public string CommandType { get; set; }
+        public int ItemId { get; set; }
     }
 }
