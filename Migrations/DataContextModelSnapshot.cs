@@ -25,9 +25,17 @@ namespace SmartRoomsApp.API.Migrations
 
                     b.Property<int>("DataY");
 
-                    b.Property<int>("UserId");
+                    b.Property<int>("Gpio");
 
-                    b.Property<string>("Width");
+                    b.Property<string>("ScriptFileName");
+
+                    b.Property<string>("Style");
+
+                    b.Property<string>("Title");
+
+                    b.Property<int>("Type");
+
+                    b.Property<int>("UserId");
 
                     b.HasKey("Id");
 

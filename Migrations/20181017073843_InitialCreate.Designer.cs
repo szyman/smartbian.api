@@ -9,8 +9,8 @@ using SmartRoomsApp.API.Data;
 namespace SmartRoomsApp.API.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20180905091317_ExtendedUserClass")]
-    partial class ExtendedUserClass
+    [Migration("20181017073843_InitialCreate")]
+    partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -27,9 +27,17 @@ namespace SmartRoomsApp.API.Migrations
 
                     b.Property<int>("DataY");
 
-                    b.Property<int>("UserId");
+                    b.Property<int>("Gpio");
 
-                    b.Property<string>("Width");
+                    b.Property<string>("ScriptFileName");
+
+                    b.Property<string>("Style");
+
+                    b.Property<string>("Title");
+
+                    b.Property<int>("Type");
+
+                    b.Property<int>("UserId");
 
                     b.HasKey("Id");
 

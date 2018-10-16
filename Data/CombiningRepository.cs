@@ -24,6 +24,11 @@ namespace SmartRoomsApp.API.Data
             _context.Remove(entity);
         }
 
+        public void Update<T>(T entity) where T : class
+        {
+            _context.Update(entity);
+        }
+
         public async Task<User> GetUser(int id)
         {
             var user = await _context.Users.Include(b => b.Blocks).FirstOrDefaultAsync(u => u.Id == id);
