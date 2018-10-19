@@ -22,31 +22,57 @@ namespace SmartRoomsApp.API.Controllers
             this._mapper = mapper;
         }
 
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetItems(int id)
+        [HttpGet("{blockId}")]
+        public async Task<IActionResult> GetItem(int blockId)
         {
-            if (id != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
+            Block block = await _repo.GetBlock(blockId);
+
+            if (block.UserId != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
                 return Unauthorized();
 
-            var user = await _repo.GetUser(id);
+            var blockForUpdate = _mapper.Map<BlockForUpdateDto>(block);
+            return Ok(blockForUpdate);
+        }
+
+        [HttpGet("all/{userId}")]
+        public async Task<IActionResult> GetItems(int userId)
+        {
+            if (userId != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
+                return Unauthorized();
+
+            var user = await _repo.GetUser(userId);
             var blocksToReturn = _mapper.Map<IEnumerable<BlocksForDetailedDto>>(user.Blocks);
 
             return Ok(blocksToReturn);
         }
 
-        [HttpPost("{id}")]
-        public async Task<IActionResult> AddItems(int id, List<BlocksForDetailedDto> blocksForDetailed)
+        [HttpPost("{userId}")]
+        public async Task<IActionResult> AddItems(int userId, List<BlocksForDetailedDto> blocksForDetailed)
         {
-            if (id != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
+            if (userId != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
                 return Unauthorized();
 
             List<Block> blocks = _mapper.Map<List<Block>>(blocksForDetailed);
-            User user = await _repo.GetUser(id);
+            User user = await _repo.GetUser(userId);
 
             //TODO: Always creating new items
             user.Blocks = blocks;
             await _repo.SaveAll();
             return StatusCode(201);
+        }
+
+        [HttpPut("{blockId}")]
+        public async Task<IActionResult> UpdateItem(int blockId, BlockForUpdateDto blocksForUpdateDto)
+        {
+            Block block = await _repo.GetBlock(blockId);
+
+            if (block.UserId != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
+                return Unauthorized();
+
+            var updatedBlock = _mapper.Map(blocksForUpdateDto, block);
+            await _repo.SaveAll();
+
+            return Ok(updatedBlock);
         }
     }
 }
