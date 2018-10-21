@@ -24,7 +24,18 @@ namespace SmartRoomsApp.API.Controllers
         [HttpPost("executeCommand")]
         public IActionResult executeCommand(ControlPanelForLoginDto controlPanelForLogin)
         {
-            using (var client = new SshClient(controlPanelForLogin.Host, controlPanelForLogin.Username, controlPanelForLogin.Password))
+            PrivateKeyFile privateKeyFile;
+            try
+            {
+                // TODO: Fix on the cloud
+                privateKeyFile = new PrivateKeyFile(@"C:\Users\Public\private_key");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
+            using (var client = new SshClient(controlPanelForLogin.Host, controlPanelForLogin.Username, privateKeyFile))
             {
                 try
                 {
@@ -44,7 +55,17 @@ namespace SmartRoomsApp.API.Controllers
         [HttpPost("uploadScriptFile")]
         public IActionResult uploadScriptFile(ControlPanelForLoginDto controlPanelForLogin)
         {
-            using (var client = new SftpClient(controlPanelForLogin.Host, controlPanelForLogin.Username, controlPanelForLogin.Password))
+            PrivateKeyFile privateKeyFile;
+            try
+            {
+                privateKeyFile = new PrivateKeyFile(@"C:\Users\Public\private_key");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
+            using (var client = new SftpClient(controlPanelForLogin.Host, controlPanelForLogin.Username, privateKeyFile))
             {
                 try
                 {
