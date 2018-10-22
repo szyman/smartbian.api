@@ -3,10 +3,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Sockets;
+using System.Security.Claims;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Renci.SshNet;
+using SmartRoomsApp.API.Data;
 using SmartRoomsApp.API.Dtos;
+using SmartRoomsApp.API.Models;
 
 namespace SmartRoomsApp.API.Controllers
 {
@@ -15,6 +19,13 @@ namespace SmartRoomsApp.API.Controllers
     [ApiController]
     public class ControlPanelController : ControllerBase
     {
+        private readonly ICombiningRepository _repo;
+
+        public ControlPanelController(ICombiningRepository repo)
+        {
+            this._repo = repo;
+        }
+
         private static readonly Dictionary<string, string> _COMMAND_TYPES = new Dictionary<string, string>()
         {
             { "test_connection", "python -V" },
@@ -22,9 +33,13 @@ namespace SmartRoomsApp.API.Controllers
         };
 
         [HttpPost("executeCommand")]
-        public IActionResult executeCommand(ControlPanelForLoginDto controlPanelForLogin)
+        public async Task<IActionResult> executeCommand(ControlPanelForLoginDto controlPanelForLogin)
         {
             PrivateKeyFile privateKeyFile;
+
+            if (controlPanelForLogin.UserId != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
+                return Unauthorized();
+
             try
             {
                 // TODO: Fix on the cloud
@@ -35,7 +50,9 @@ namespace SmartRoomsApp.API.Controllers
                 return BadRequest(ex.Message);
             }
 
-            using (var client = new SshClient(controlPanelForLogin.Host, controlPanelForLogin.Username, privateKeyFile))
+            User user = await _repo.GetUser(controlPanelForLogin.UserId);
+
+            using (var client = new SshClient(user.RaspHost, user.RaspUsername, privateKeyFile))
             {
                 try
                 {
@@ -53,9 +70,13 @@ namespace SmartRoomsApp.API.Controllers
         }
 
         [HttpPost("uploadScriptFile")]
-        public IActionResult uploadScriptFile(ControlPanelForLoginDto controlPanelForLogin)
+        public async Task<IActionResult> uploadScriptFile(ControlPanelForLoginDto controlPanelForLogin)
         {
             PrivateKeyFile privateKeyFile;
+
+            if (controlPanelForLogin.UserId != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
+                return Unauthorized();
+
             try
             {
                 privateKeyFile = new PrivateKeyFile(@"C:\Users\Public\private_key");
@@ -65,7 +86,9 @@ namespace SmartRoomsApp.API.Controllers
                 return BadRequest(ex.Message);
             }
 
-            using (var client = new SftpClient(controlPanelForLogin.Host, controlPanelForLogin.Username, privateKeyFile))
+            User user = await _repo.GetUser(controlPanelForLogin.UserId);
+
+            using (var client = new SftpClient(user.RaspHost, user.RaspUsername, privateKeyFile))
             {
                 try
                 {

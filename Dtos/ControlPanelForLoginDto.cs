@@ -2,8 +2,7 @@ namespace SmartRoomsApp.API.Dtos
 {
     public class ControlPanelForLoginDto
     {
-        public string Host { get; set; }
-        public string Username { get; set; }
+        public int UserId { get; set; }
         public string CommandType { get; set; }
         public int ItemId { get; set; }
     }
