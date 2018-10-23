@@ -17,7 +17,8 @@ namespace SmartRoomsApp.API.Controllers
     {
         private readonly ICombiningRepository _repo;
         private readonly IMapper _mapper;
-        public BlocksController(ICombiningRepository repo, IMapper mapper) {
+        public BlocksController(ICombiningRepository repo, IMapper mapper)
+        {
             this._repo = repo;
             this._mapper = mapper;
         }
@@ -53,11 +54,16 @@ namespace SmartRoomsApp.API.Controllers
                 return Unauthorized();
 
             User user = await _repo.GetUser(userId);
-            user.Blocks = null;
-            _mapper.Map(blocksForDetailedDto, user.Blocks);
+            BlocksForDetailedDto blockForUpdate;
+            foreach (var block in user.Blocks)
+            {
+                blockForUpdate = blocksForDetailedDto.Find(b => b.Id == block.Id);
+                _mapper.Map(blockForUpdate, block);
+            }
 
             await _repo.SaveAll();
-            return Ok(user.Blocks);
+            var blockUpdatedList = _mapper.Map<List<BlocksForDetailedDto>>(user.Blocks);
+            return Ok(blockUpdatedList);
         }
 
         [HttpPost("addNewItems/{userId}")]
@@ -68,12 +74,14 @@ namespace SmartRoomsApp.API.Controllers
 
             List<Block> blocks = _mapper.Map<List<Block>>(blocksForNewDetailedDto);
             User user = await _repo.GetUser(userId);
-            blocks.ForEach(block => {
+            blocks.ForEach(block =>
+            {
                 user.Blocks.Add(block);
             });
 
             await _repo.SaveAll();
-            return Ok(user.Blocks);
+            var blockUpdatedList = _mapper.Map<List<BlocksForDetailedDto>>(user.Blocks);
+            return Ok(blockUpdatedList);
         }
 
         [HttpPut("{blockId}")]
