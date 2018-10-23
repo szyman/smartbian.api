@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using AutoMapper;
 using SmartRoomsApp.API.Dtos;
 using SmartRoomsApp.API.Models;
@@ -14,6 +15,7 @@ namespace SmartRoomsApp.API.Helpers
             CreateMap<UserForUpdateDto, User>();
             CreateMap<BlocksForDetailedDto, Block>();
             CreateMap<BlockForUpdateDto, Block>();
+            CreateMap<BlocksForNewDetailedDto, Block>();
         }
     }
 }

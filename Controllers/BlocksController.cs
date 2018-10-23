@@ -47,24 +47,40 @@ namespace SmartRoomsApp.API.Controllers
         }
 
         [HttpPost("{userId}")]
-        public async Task<IActionResult> AddItems(int userId, List<BlocksForDetailedDto> blocksForDetailed)
+        public async Task<IActionResult> AddItems(int userId, List<BlocksForDetailedDto> blocksForDetailedDto)
         {
             if (userId != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
                 return Unauthorized();
 
-            List<Block> blocks = _mapper.Map<List<Block>>(blocksForDetailed);
             User user = await _repo.GetUser(userId);
+            user.Blocks = null;
+            _mapper.Map(blocksForDetailedDto, user.Blocks);
 
-            //TODO: Always creating new items
-            user.Blocks = blocks;
             await _repo.SaveAll();
-            return StatusCode(201);
+            return Ok(user.Blocks);
+        }
+
+        [HttpPost("addNewItems/{userId}")]
+        public async Task<IActionResult> AddNewItems(int userId, List<BlocksForNewDetailedDto> blocksForNewDetailedDto)
+        {
+            if (userId != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
+                return Unauthorized();
+
+            List<Block> blocks = _mapper.Map<List<Block>>(blocksForNewDetailedDto);
+            User user = await _repo.GetUser(userId);
+            blocks.ForEach(block => {
+                user.Blocks.Add(block);
+            });
+
+            await _repo.SaveAll();
+            return Ok(user.Blocks);
         }
 
         [HttpPut("{blockId}")]
         public async Task<IActionResult> UpdateItem(int blockId, BlockForUpdateDto blocksForUpdateDto)
         {
             Block block = await _repo.GetBlock(blockId);
+            //blocksForUpdateDto.Id = blockId;
 
             if (block.UserId != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
                 return Unauthorized();
