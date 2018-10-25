@@ -26,12 +26,6 @@ namespace SmartRoomsApp.API.Controllers
             this._repo = repo;
         }
 
-        private static readonly Dictionary<string, string> _COMMAND_TYPES = new Dictionary<string, string>()
-        {
-            { "test_connection", "python -V" },
-            { "run_switch", "python switch_lamp.py" }
-        };
-
         [HttpPost("executeCommand")]
         public async Task<IActionResult> executeCommand(ControlPanelForLoginDto controlPanelForLogin)
         {
@@ -56,8 +50,9 @@ namespace SmartRoomsApp.API.Controllers
             {
                 try
                 {
+                    var commandText = await this._getCommandAsync(controlPanelForLogin.CommandType, controlPanelForLogin.ItemId);
                     client.Connect();
-                    SshCommand command = client.CreateCommand(_COMMAND_TYPES[controlPanelForLogin.CommandType]);
+                    SshCommand command = client.CreateCommand(commandText);
                     command.Execute();
 
                     return Ok(command.Result + command.Error);
@@ -69,61 +64,19 @@ namespace SmartRoomsApp.API.Controllers
             }
         }
 
-        [HttpPost("uploadScriptFile")]
-        public async Task<IActionResult> uploadScriptFile(ControlPanelForLoginDto controlPanelForLogin)
+        private async Task<string> _getCommandAsync(string CommandType, int itemId)
         {
-            PrivateKeyFile privateKeyFile;
-
-            if (controlPanelForLogin.UserId != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
-                return Unauthorized();
-
-            try
+            switch(CommandType)
             {
-                privateKeyFile = new PrivateKeyFile(@"C:\Users\Public\private_key");
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-
-            User user = await _repo.GetUser(controlPanelForLogin.UserId);
-
-            using (var client = new SftpClient(user.RaspHost, user.RaspUsername, privateKeyFile))
-            {
-                try
-                {
-                    string scriptFileName = "switch_lamp.py";
-                    bool isFileExist = false;
-                    client.Connect();
-                    IEnumerable<string> files = client.ListDirectory("").Select(s => s.Name);
-
-                    foreach (string fileName in files)
-                    {
-                        if (fileName == scriptFileName)
-                        {
-                            isFileExist = true;
-                            break;
-                        }
-                    }
-
-                    using (var fileStream = new FileStream("./Assets/Scripts/switch_lamp.py", FileMode.Open, FileAccess.Read))
-                    {
-                        fileStream.Flush();
-                        fileStream.Position = 0;
-                        client.UploadFile(fileStream, "switch_lamp.py");
-                        fileStream.Close();
-                    }
-
-                    return Ok("File: " + scriptFileName + " Replaced: " + isFileExist);
-                }
-                catch (SocketException ex)
-                {
-                    return BadRequest(ex.Message);
-                }
-                catch (Exception ex)
-                {
-                    return BadRequest(ex.Message);
-                }
+                case "test_connection":
+                    return "python -V";
+                case "run_switch":
+                    Block block = await _repo.GetBlock(itemId);
+                    if (block == null)
+                        return "";
+                    return "python " + block.ScriptFileName;
+                default:
+                    return "";
             }
         }
     }

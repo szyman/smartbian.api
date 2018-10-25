@@ -31,7 +31,7 @@ namespace SmartRoomsApp.API.Data
 
         public async Task<Block> GetBlock(int id)
         {
-            var block = await _context.Blocks.FirstOrDefaultAsync(b => b.Id == id);
+            var block = await _context.Blocks.Include(u => u.User).FirstOrDefaultAsync(b => b.Id == id);
             return block;
         }
 
