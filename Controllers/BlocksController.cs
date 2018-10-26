@@ -41,6 +41,30 @@ namespace SmartRoomsApp.API.Controllers
             return Ok(blockForUpdate);
         }
 
+        [HttpDelete("{blockId}")]
+        public async Task<IActionResult> DeleteItem(int blockId)
+        {
+            Block block = await _repo.GetBlock(blockId);
+            if (block.UserId != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
+                return Unauthorized();
+
+            try
+            {
+                using (var client = _getConnectedSftpClient(block.User))
+                {
+                    client.DeleteFile(block.ScriptFileName);
+                    _repo.Delete(block);
+                    await _repo.SaveAll();
+
+                    return Ok(block.Id);
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         [HttpGet("all/{userId}")]
         public async Task<IActionResult> GetItems(int userId)
         {
@@ -145,7 +169,7 @@ namespace SmartRoomsApp.API.Controllers
         {
             PrivateKeyFile privateKeyFile;
             Block block = await _repo.GetBlock(blockId);
-            Stream scriptStream = this.generateStreamFromString(script);
+            Stream scriptStream = this._generateStreamFromString(script);
 
             if (block.UserId != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
                 return Unauthorized();
@@ -199,7 +223,7 @@ namespace SmartRoomsApp.API.Controllers
             }
         }
 
-        private Stream generateStreamFromString(string text)
+        private Stream _generateStreamFromString(string text)
         {
             var stream = new MemoryStream();
             var writer = new StreamWriter(stream);
@@ -207,6 +231,21 @@ namespace SmartRoomsApp.API.Controllers
             writer.Flush();
             stream.Position = 0;
             return stream;
+        }
+
+        private SftpClient _getConnectedSftpClient(User user)
+        {
+            try
+            {
+                var privateKeyFile = new PrivateKeyFile(@"C:\Users\Public\private_key");
+                var client = new SftpClient(user.RaspHost, user.RaspUsername, privateKeyFile);
+                client.Connect();
+                return client;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
         }
     }
 }
