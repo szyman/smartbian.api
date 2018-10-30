@@ -61,7 +61,8 @@ namespace SmartRoomsApp.API
         {
             //TODO: Move to development statement
             app.UseCors(
-                options => options.WithOrigins("http://localhost:8080")
+                //dotnet run --launch-profile production
+                options => options.WithOrigins("http://localhost:8080", "http://192.168.100.3:8080")
                     .AllowAnyMethod()
                     .AllowAnyHeader()
             );
