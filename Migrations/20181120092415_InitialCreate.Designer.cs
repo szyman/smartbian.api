@@ -9,7 +9,7 @@ using SmartRoomsApp.API.Data;
 namespace SmartRoomsApp.API.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20181017073843_InitialCreate")]
+    [Migration("20181120092415_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -30,6 +30,8 @@ namespace SmartRoomsApp.API.Migrations
                     b.Property<int>("Gpio");
 
                     b.Property<string>("ScriptFileName");
+
+                    b.Property<int>("SocketPort");
 
                     b.Property<string>("Style");
 

@@ -29,6 +29,8 @@ namespace SmartRoomsApp.API.Migrations
 
                     b.Property<string>("ScriptFileName");
 
+                    b.Property<int>("SocketPort");
+
                     b.Property<string>("Style");
 
                     b.Property<string>("Title");
