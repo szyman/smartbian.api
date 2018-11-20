@@ -50,6 +50,7 @@ namespace SmartRoomsApp.API.Migrations
                     Gpio = table.Column<int>(nullable: false),
                     Title = table.Column<string>(nullable: true),
                     ScriptFileName = table.Column<string>(nullable: true),
+                    SocketPort = table.Column<int>(nullable: false),
                     UserId = table.Column<int>(nullable: false)
                 },
                 constraints: table =>

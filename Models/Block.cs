@@ -10,6 +10,7 @@ namespace SmartRoomsApp.API.Models
         public int Gpio { get; set; }
         public string Title { get; set; }
         public string ScriptFileName { get; set; }
+        public int SocketPort { get; set; }
         public int UserId { get; set; }
         public User User { get; set; }
     }
