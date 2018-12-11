@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SmartRoomsApp.API.Data;
 using SmartRoomsApp.API.Dtos;
+using System;
+using SmartRoomsApp.API.Helpers;
 
 namespace SmartRoomsApp.API.Controllers
 {
@@ -14,12 +16,16 @@ namespace SmartRoomsApp.API.Controllers
     [ApiController]
     public class UsersController : ControllerBase
     {
+        private static string CONTAINER_NAME = "smartbiancontainer";
         private readonly ICombiningRepository _repo;
         private readonly IMapper _mapper;
-        public UsersController(ICombiningRepository repo, IMapper mapper)
+        private readonly ICloudStorageRepository _cloudStorage;
+
+        public UsersController(ICombiningRepository repo, IMapper mapper, ICloudStorageRepository cloudStorage)
         {
             _mapper = mapper;
             _repo = repo;
+            _cloudStorage = cloudStorage;
         }
 
         [HttpGet]
@@ -54,6 +60,47 @@ namespace SmartRoomsApp.API.Controllers
                 return Ok(userToReturn);
 
             throw new System.Exception($"Updating user {id} failed on save");
+        }
+
+        [HttpGet("{id}/getSshKey")]
+        public async Task<IActionResult> GetSsh(int id)
+        {
+            if (id != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
+                return Unauthorized();
+
+            var userFromRepo = await _repo.GetUser(id);
+
+            try
+            {
+                string sshKey = await _cloudStorage.downloadTextFromBlobContainer(CONTAINER_NAME, userFromRepo.SshBlobName);
+                return Ok(sshKey);
+            }
+            catch(Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPut("{id}/saveSshKey")]
+        public async Task<IActionResult> SaveSshKey(int id, [FromBody] string sshKey)
+        {
+            if (id != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
+                return Unauthorized();
+
+            var userFromRepo = await _repo.GetUser(id);
+            userFromRepo.SshBlobName = id + "_rsa";
+
+            try
+            {
+                string blobFileName = await _cloudStorage.uploadTextToBlobContainer(CONTAINER_NAME, userFromRepo.SshBlobName, sshKey);
+                await _repo.SaveAll();
+
+                return Ok(blobFileName);
+            }
+            catch(Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
     }
 }

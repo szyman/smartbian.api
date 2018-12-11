@@ -59,6 +59,8 @@ namespace SmartRoomsApp.API.Migrations
 
                     b.Property<string>("RaspUsername");
 
+                    b.Property<string>("SshBlobName");
+
                     b.Property<string>("Username");
 
                     b.HasKey("Id");
