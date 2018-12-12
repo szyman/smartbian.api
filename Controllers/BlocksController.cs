@@ -56,12 +56,22 @@ namespace SmartRoomsApp.API.Controllers
                     _repo.Delete(block);
                     await _repo.SaveAll();
 
-                    return Ok(block.Id);
+                    return Ok(
+                        new { id = block.Id }
+                    );
                 }
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                _repo.Delete(block);
+                await _repo.SaveAll();
+
+                return Ok(
+                    new {
+                        id = block.Id,
+                        error = ex.Message
+                    }
+                );
             }
         }
 

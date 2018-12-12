@@ -17,7 +17,8 @@ namespace SmartRoomsApp.API.Migrations
                     PasswordHash = table.Column<byte[]>(nullable: true),
                     PasswordSalt = table.Column<byte[]>(nullable: true),
                     RaspHost = table.Column<string>(nullable: true),
-                    RaspUsername = table.Column<string>(nullable: true)
+                    RaspUsername = table.Column<string>(nullable: true),
+                    SshBlobName = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
                 {

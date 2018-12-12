@@ -10,6 +10,7 @@ namespace SmartRoomsApp.API.Models
         public byte[] PasswordSalt { get; set; }
         public string RaspHost { get; set; }
         public string RaspUsername { get; set; }
+        public string SshBlobName { get; set; }
         public ICollection<Block> Blocks { get; set; }
     }
 }

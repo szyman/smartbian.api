@@ -9,7 +9,7 @@ using SmartRoomsApp.API.Data;
 namespace SmartRoomsApp.API.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20181120092415_InitialCreate")]
+    [Migration("20181210093552_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -60,6 +60,8 @@ namespace SmartRoomsApp.API.Migrations
                     b.Property<string>("RaspHost");
 
                     b.Property<string>("RaspUsername");
+
+                    b.Property<string>("SshBlobName");
 
                     b.Property<string>("Username");
 

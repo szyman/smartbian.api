@@ -44,6 +44,7 @@ namespace SmartRoomsApp.API
                 });
             services.AddScoped<IAuthRepository, AuthRepository>();
             services.AddScoped<ICombiningRepository, CombiningRepository>();
+            services.AddScoped<ICloudStorageRepository, CloudStorageRepository>();
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options => {
                     options.TokenValidationParameters = new TokenValidationParameters
