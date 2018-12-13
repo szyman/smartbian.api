@@ -23,10 +23,13 @@ namespace SmartRoomsApp.API.Controllers
     {
         private readonly ICombiningRepository _repo;
         private readonly IMapper _mapper;
-        public BlocksController(ICombiningRepository repo, IMapper mapper)
+        private readonly ICloudStorageRepository _cloudStorage;
+
+        public BlocksController(ICombiningRepository repo, IMapper mapper, ICloudStorageRepository cloudStorage)
         {
             this._repo = repo;
             this._mapper = mapper;
+            this._cloudStorage = cloudStorage;
         }
 
         [HttpGet("{blockId}")]
@@ -50,7 +53,7 @@ namespace SmartRoomsApp.API.Controllers
 
             try
             {
-                using (var client = _getConnectedSftpClient(block.User))
+                using (var client = await _getConnectedSftpClient(block.User))
                 {
                     client.DeleteFile(block.ScriptFileName);
                     _repo.Delete(block);
@@ -149,7 +152,7 @@ namespace SmartRoomsApp.API.Controllers
 
             try
             {
-                using (var client = _getConnectedSftpClient(block.User))
+                using (var client = await _getConnectedSftpClient(block.User))
                 {
                     MemoryStream stream = new MemoryStream();
                     client.DownloadFile(block.ScriptFileName, stream);
@@ -178,7 +181,7 @@ namespace SmartRoomsApp.API.Controllers
                     block.ScriptFileName = block.UserId + "_" + block.Id + ".py";
                 }
 
-                using (var client = _getConnectedSftpClient(block.User))
+                using (var client = await _getConnectedSftpClient(block.User))
                 {
                     Stream scriptStream = this._generateStreamFromString(script);
 
@@ -219,11 +222,12 @@ namespace SmartRoomsApp.API.Controllers
             return stream;
         }
 
-        private SftpClient _getConnectedSftpClient(User user)
+        private async Task<SftpClient> _getConnectedSftpClient(User user)
         {
             try
             {
-                var privateKeyFile = new PrivateKeyFile(@"C:\Users\Public\private_key");
+                var sshStream = await _cloudStorage.downloadStreamFromBlobContainer(user.SshBlobName);
+                var privateKeyFile = new PrivateKeyFile(sshStream);
                 var client = new SftpClient(user.RaspHost, user.RaspUsername, privateKeyFile);
                 client.Connect();
                 return client;

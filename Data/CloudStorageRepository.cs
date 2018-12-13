@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
@@ -17,20 +18,26 @@ namespace SmartRoomsApp.API.Helpers
             _serviceClient = _account.CreateCloudBlobClient();
         }
 
-        public async Task<string> downloadTextFromBlobContainer(string containerName, string fileName)
+        public async Task<Stream> downloadStreamFromBlobContainer(string fileName, string containerName)
         {
-
-                CloudBlockBlob blockBlob = await _getBlockBlob(containerName, fileName);
-                return await blockBlob.DownloadTextAsync();
-
+            Stream stream = new MemoryStream();
+            CloudBlockBlob blockBlob = await _getBlockBlob(containerName, fileName);
+            await blockBlob.DownloadToStreamAsync(stream);
+            stream.Position = 0;
+            return stream;
         }
 
-        public async Task<string> uploadTextToBlobContainer(string containerName, string fileName, string text)
+        public async Task<string> downloadTextFromBlobContainer(string fileName, string containerName)
         {
+            CloudBlockBlob blockBlob = await _getBlockBlob(containerName, fileName);
+            return await blockBlob.DownloadTextAsync();
+        }
 
-                CloudBlockBlob blockBlob = await _getBlockBlob(containerName, fileName);
-                await blockBlob.UploadTextAsync(text);
-                return blockBlob.Name;
+        public async Task<string> uploadTextToBlobContainer(string fileName, string text, string containerName)
+        {
+            CloudBlockBlob blockBlob = await _getBlockBlob(containerName, fileName);
+            await blockBlob.UploadTextAsync(text);
+            return blockBlob.Name;
         }
 
         private async Task<CloudBlockBlob> _getBlockBlob(string containerName, string fileName)

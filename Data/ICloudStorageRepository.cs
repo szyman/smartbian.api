@@ -1,3 +1,4 @@
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.WindowsAzure.Storage.Blob;
 
@@ -5,7 +6,8 @@ namespace SmartRoomsApp.API.Data
 {
     public interface ICloudStorageRepository
     {
-        Task<string> downloadTextFromBlobContainer(string containerName, string fileName);
-        Task<string> uploadTextToBlobContainer(string containerName, string fileName, string text);
+        Task<Stream> downloadStreamFromBlobContainer(string fileName, string containerName = "smartbiancontainer");
+        Task<string> downloadTextFromBlobContainer(string fileName, string containerName = "smartbiancontainer");
+        Task<string> uploadTextToBlobContainer(string fileName, string text, string containerName = "smartbiancontainer");
     }
 }

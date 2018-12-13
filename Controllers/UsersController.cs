@@ -16,7 +16,6 @@ namespace SmartRoomsApp.API.Controllers
     [ApiController]
     public class UsersController : ControllerBase
     {
-        private static string CONTAINER_NAME = "smartbiancontainer";
         private readonly ICombiningRepository _repo;
         private readonly IMapper _mapper;
         private readonly ICloudStorageRepository _cloudStorage;
@@ -72,7 +71,7 @@ namespace SmartRoomsApp.API.Controllers
 
             try
             {
-                string sshKey = await _cloudStorage.downloadTextFromBlobContainer(CONTAINER_NAME, userFromRepo.SshBlobName);
+                string sshKey = await _cloudStorage.downloadTextFromBlobContainer(userFromRepo.SshBlobName);
                 return Ok(sshKey);
             }
             catch(Exception ex)
@@ -92,7 +91,7 @@ namespace SmartRoomsApp.API.Controllers
 
             try
             {
-                string blobFileName = await _cloudStorage.uploadTextToBlobContainer(CONTAINER_NAME, userFromRepo.SshBlobName, sshKey);
+                string blobFileName = await _cloudStorage.uploadTextToBlobContainer(userFromRepo.SshBlobName, sshKey);
                 await _repo.SaveAll();
 
                 return Ok(blobFileName);

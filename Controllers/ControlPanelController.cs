@@ -20,10 +20,12 @@ namespace SmartRoomsApp.API.Controllers
     public class ControlPanelController : ControllerBase
     {
         private readonly ICombiningRepository _repo;
+        private readonly ICloudStorageRepository _cloudStorage;
 
-        public ControlPanelController(ICombiningRepository repo)
+        public ControlPanelController(ICombiningRepository repo, ICloudStorageRepository cloudStorage)
         {
             this._repo = repo;
+            this._cloudStorage = cloudStorage;
         }
 
         [HttpPost("executeCommand")]
@@ -34,17 +36,17 @@ namespace SmartRoomsApp.API.Controllers
             if (controlPanelForLogin.UserId != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
                 return Unauthorized();
 
+            User user = await _repo.GetUser(controlPanelForLogin.UserId);
+
             try
             {
-                // TODO: Fix on the cloud
-                privateKeyFile = new PrivateKeyFile(@"C:\Users\Public\private_key");
+                var stream = await _cloudStorage.downloadStreamFromBlobContainer(user.SshBlobName);
+                privateKeyFile = new PrivateKeyFile(stream);
             }
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
-
-            User user = await _repo.GetUser(controlPanelForLogin.UserId);
 
             using (var client = new SshClient(user.RaspHost, user.RaspUsername, privateKeyFile))
             {
