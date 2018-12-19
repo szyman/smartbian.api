@@ -9,14 +9,15 @@ using SmartRoomsApp.API.Data;
 namespace SmartRoomsApp.API.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20181210093552_InitialCreate")]
+    [Migration("20181219143306_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "2.1.1-rtm-30846");
+                .HasAnnotation("ProductVersion", "2.1.1-rtm-30846")
+                .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
             modelBuilder.Entity("SmartRoomsApp.API.Models.Block", b =>
                 {
