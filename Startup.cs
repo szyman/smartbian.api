@@ -21,6 +21,7 @@ using Microsoft.AspNetCore.Http;
 using SmartRoomsApp.API.Helpers;
 using AutoMapper;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace SmartRoomsApp.API
 {
@@ -36,15 +37,17 @@ namespace SmartRoomsApp.API
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContextPool<DataContext>(
-                options => options.UseMySql("Server=localhost;Database=smartbian;User=smartbian;Password=smartbian;"
-            ));
+            services.AddDbContext<DataContext>(
+                options => options.UseSqlServer("Server=tcp:sa-sql-101.database.windows.net,1433;Initial Catalog=smartbianAppDb;Persist Security Info=False;User ID=smartbian;Password=Sadatabase123;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
+            ).ConfigureWarnings(w => w.Ignore(CoreEventId.IncludeIgnoredWarning)));
             services.AddCors();
             services.AddAutoMapper();
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1)
                 .AddJsonOptions(opt => {
                     opt.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
                 });
+
+            services.BuildServiceProvider().GetService<DataContext>().Database.Migrate();
             services.AddScoped<IAuthRepository, AuthRepository>();
             services.AddScoped<ICombiningRepository, CombiningRepository>();
             services.AddScoped<ICloudStorageRepository, CloudStorageRepository>();
