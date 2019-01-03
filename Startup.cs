@@ -49,6 +49,7 @@ namespace SmartRoomsApp.API
                 });
 
             services.BuildServiceProvider().GetService<DataContext>().Database.Migrate();
+            services.AddTransient<Seed>();
             services.AddScoped<IAuthRepository, AuthRepository>();
             services.AddScoped<ICombiningRepository, CombiningRepository>();
             services.AddScoped<ICloudStorageRepository, CloudStorageRepository>();
@@ -66,7 +67,7 @@ namespace SmartRoomsApp.API
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, Seed seeder)
         {
             if (env.IsDevelopment())
             {
@@ -97,6 +98,7 @@ namespace SmartRoomsApp.API
                 });
             }
 
+            seeder.SeedUSers();
             app.UseAuthentication();
             app.UseDefaultFiles();
             app.UseStaticFiles();
