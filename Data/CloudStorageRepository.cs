@@ -1,6 +1,8 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 using SmartRoomsApp.API.Data;
@@ -12,9 +14,17 @@ namespace SmartRoomsApp.API.Helpers
         private readonly CloudStorageAccount _account;
         private readonly CloudBlobClient _serviceClient;
 
-        public CloudStorageRepository()
+        public CloudStorageRepository(IHostingEnvironment env, IConfiguration configuration)
         {
-            _account = CloudStorageAccount.DevelopmentStorageAccount;
+            if (env.IsDevelopment())
+            {
+                _account = CloudStorageAccount.DevelopmentStorageAccount;
+            }
+            else
+            {
+                _account = CloudStorageAccount.Parse(configuration.GetConnectionString("DefaultConnectionStorage"));
+            }
+
             _serviceClient = _account.CreateCloudBlobClient();
         }
 
