@@ -20,7 +20,6 @@ using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using SmartRoomsApp.API.Helpers;
 using AutoMapper;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace SmartRoomsApp.API
@@ -38,8 +37,9 @@ namespace SmartRoomsApp.API
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<DataContext>(
-                options => options.UseSqlServer("Server=tcp:sa-sql-101.database.windows.net,1433;Initial Catalog=smartbianAppDb;Persist Security Info=False;User ID=smartbian;Password=Sadatabase123;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
-            ).ConfigureWarnings(w => w.Ignore(CoreEventId.IncludeIgnoredWarning)));
+                options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"))
+                    .ConfigureWarnings(w => w.Ignore(CoreEventId.IncludeIgnoredWarning))
+            );
             services.AddCors();
             services.AddAutoMapper();
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1)
