@@ -91,7 +91,7 @@ namespace SmartRoomsApp.API.Controllers
         }
 
         [HttpPost("{userId}")]
-        public async Task<IActionResult> AddItems(int userId, List<BlocksForDetailedDto> blocksForDetailedDto)
+        public async Task<IActionResult> AddItems(int userId, [FromBody] List<BlocksForDetailedDto> blocksForDetailedDto)
         {
             if (userId != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
                 return Unauthorized();
@@ -110,7 +110,7 @@ namespace SmartRoomsApp.API.Controllers
         }
 
         [HttpPost("addNewItems/{userId}")]
-        public async Task<IActionResult> AddNewItems(int userId, List<BlocksForNewDetailedDto> blocksForNewDetailedDto)
+        public async Task<IActionResult> AddNewItems(int userId, [FromBody] List<BlocksForNewDetailedDto> blocksForNewDetailedDto)
         {
             if (userId != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
                 return Unauthorized();
