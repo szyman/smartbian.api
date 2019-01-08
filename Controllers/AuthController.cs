@@ -25,7 +25,7 @@ namespace SmartRoomsApp.API.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register(UserForRegisterDto userForRegisterDto)
+        public async Task<IActionResult> Register([FromBody] UserForRegisterDto userForRegisterDto)
         {
             userForRegisterDto.Username = userForRegisterDto.Username.ToLower();
             if (await _repo.UserExists(userForRegisterDto.Username))
@@ -48,10 +48,38 @@ namespace SmartRoomsApp.API.Controllers
             if (userFromRepo == null)
                 return Unauthorized();
 
+            return Ok(new
+            {
+                token = _generateToken(userFromRepo.Id, userFromRepo.Username)
+            });
+        }
+
+        [HttpPost("loginExtProvider")]
+        public async Task<IActionResult> LoginExtProvider([FromBody] UserForLoginDto userForLoginDto)
+        {
+            User user;
+
+            if (await _repo.UserExists(userForLoginDto.Username))
+            {
+                user = await _repo.LoginExtProvider(userForLoginDto.Username);
+            }
+            else
+            {
+                user = await _repo.LoginExtProvider(userForLoginDto.Username);
+            }
+
+            return Ok(new
+            {
+                token = _generateToken(user.Id, user.Username)
+            });
+        }
+
+        private string _generateToken(int userId, string userName)
+        {
             var claims = new[]
             {
-                new Claim(ClaimTypes.NameIdentifier, userFromRepo.Id.ToString()),
-                new Claim(ClaimTypes.Name, userFromRepo.Username)
+                new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
+                new Claim(ClaimTypes.Name, userName)
             };
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config.GetSection("AppSettings:Token").Value));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
@@ -63,10 +91,7 @@ namespace SmartRoomsApp.API.Controllers
             };
             var tokenHandler = new JwtSecurityTokenHandler();
             var token = tokenHandler.CreateToken(tokenDescriptor);
-
-            return Ok(new {
-                token = tokenHandler.WriteToken(token)
-            });
+            return tokenHandler.WriteToken(token);
         }
     }
 }
