@@ -14,7 +14,6 @@ using SmartRoomsApp.API.Models;
 
 namespace SmartRoomsApp.API.Controllers
 {
-    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class ControlPanelController : ControllerBase
