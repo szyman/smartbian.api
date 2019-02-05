@@ -53,19 +53,6 @@ namespace SmartRoomsApp.API.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Values",
-                columns: table => new
-                {
-                    Id = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
-                    Name = table.Column<string>(nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Values", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "AspNetRoleClaims",
                 columns: table => new
                 {
@@ -181,10 +168,8 @@ namespace SmartRoomsApp.API.Migrations
                     DataY = table.Column<int>(nullable: false),
                     Style = table.Column<string>(nullable: true),
                     Type = table.Column<int>(nullable: false),
-                    Gpio = table.Column<int>(nullable: false),
                     Title = table.Column<string>(nullable: true),
                     ScriptFileName = table.Column<string>(nullable: true),
-                    SocketPort = table.Column<int>(nullable: false),
                     UserId = table.Column<int>(nullable: false)
                 },
                 constraints: table =>
@@ -262,9 +247,6 @@ namespace SmartRoomsApp.API.Migrations
 
             migrationBuilder.DropTable(
                 name: "Blocks");
-
-            migrationBuilder.DropTable(
-                name: "Values");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");

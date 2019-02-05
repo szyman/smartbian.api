@@ -99,11 +99,7 @@ namespace SmartRoomsApp.API.Migrations
 
                     b.Property<int>("DataY");
 
-                    b.Property<int>("Gpio");
-
                     b.Property<string>("ScriptFileName");
-
-                    b.Property<int>("SocketPort");
 
                     b.Property<string>("Style");
 
@@ -214,19 +210,6 @@ namespace SmartRoomsApp.API.Migrations
                     b.HasIndex("RoleId");
 
                     b.ToTable("AspNetUserRoles");
-                });
-
-            modelBuilder.Entity("SmartRoomsApp.API.Models.Value", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<string>("Name");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Values");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
