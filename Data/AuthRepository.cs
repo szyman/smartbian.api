@@ -27,25 +27,6 @@ namespace SmartRoomsApp.API.Data
             return user;
         }
 
-        public async Task<User> LoginExtProvider(string username)
-        {
-            var user = await _context.Users.FirstOrDefaultAsync(x => x.UserName == username);
-
-            if (user == null)
-            {
-                user = new User
-                {
-                    UserName = username
-                };
-
-                var userCreated = await _context.Users.AddAsync(user);
-                await _context.SaveChangesAsync();
-                return userCreated.Entity;
-            }
-
-            return user;
-        }
-
         private bool VerifyPasswordHash(string password, byte[] passwordHash, byte[] passwordSalt)
         {
             using (var hmac = new System.Security.Cryptography.HMACSHA512(passwordSalt))

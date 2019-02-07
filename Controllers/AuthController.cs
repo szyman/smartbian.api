@@ -78,20 +78,38 @@ namespace SmartRoomsApp.API.Controllers
         [HttpPost("loginExtProvider")]
         public async Task<IActionResult> LoginExtProvider([FromBody] UserForLoginDto userForLoginDto)
         {
-            // User user;
+            var user = await _userManager.FindByNameAsync(userForLoginDto.Username);
+            if (user == null)
+            {
+                var userToCreate = new User
+                {
+                    UserName = userForLoginDto.Username
+                };
 
-            // if (await _repo.UserExists(userForLoginDto.Username))
-            // {
-            //     user = await _repo.LoginExtProvider(userForLoginDto.Username);
-            // }
-            // else
-            // {
-            //     user = await _repo.LoginExtProvider(userForLoginDto.Username);
-            // }
+                var result = await _userManager.CreateAsync(userToCreate, userForLoginDto.Password);
+
+                if (!result.Succeeded)
+                {
+                    return BadRequest(result.Errors);
+                }
+            }
+            else
+            {
+                var result = await _signInManager.CheckPasswordSignInAsync(user, userForLoginDto.Password, false);
+
+                if (!result.Succeeded)
+                {
+                    return Unauthorized();
+                }
+            }
+
+            var appUser = await _userManager.Users.Include(b => b.Blocks)
+                        .FirstOrDefaultAsync(u => u.UserName == userForLoginDto.Username);
 
             return Ok(new
             {
-                //token = _generateToken(user.Id, user.UserName)
+                token = _generateToken(appUser).Result
+                //TODO: Add appUser with mapped DTO eg. _mapper.Map<UserForListDto>(appuser)
             });
         }
 
