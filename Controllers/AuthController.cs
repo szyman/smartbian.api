@@ -47,6 +47,7 @@ namespace SmartRoomsApp.API.Controllers
 
             if (result.Succeeded)
             {
+                await _userManager.AddToRoleAsync(userToCreate, "Member");
                 return CreatedAtRoute("GetUser",
                     new { controller = "Users", id = userToCreate.Id }, userToReturn);
             }
@@ -91,6 +92,10 @@ namespace SmartRoomsApp.API.Controllers
                 if (!result.Succeeded)
                 {
                     return BadRequest(result.Errors);
+                }
+                else
+                {
+                    await _userManager.AddToRoleAsync(userToCreate, "Member");
                 }
             }
             else
