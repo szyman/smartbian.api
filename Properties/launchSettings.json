@@ -26,13 +26,14 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
-    "production": {
+    "dev-ip": {
+      "comment": "dotnet run --launch-profile dev-ip",
       "commandName": "Project",
       "launchBrowser": true,
       "launchUrl": "api/values",
       "applicationUrl": "https://192.168.100.3:5001;http://192.168.100.3:5000",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Production"
+        "ASPNETCORE_ENVIRONMENT": "Development"
       }
     }
   }
