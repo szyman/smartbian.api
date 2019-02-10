@@ -50,6 +50,16 @@ namespace SmartRoomsApp.API.Controllers
             if (block.UserId != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
                 return Unauthorized();
 
+            if (block.ScriptFileName.Length == 0)
+            {
+                _repo.Delete(block);
+                await _repo.SaveAll();
+
+                return Ok(
+                    new { id = block.Id }
+                );
+            }
+
             try
             {
                 using (var client = await _getConnectedSftpClient(block.User))
@@ -69,7 +79,8 @@ namespace SmartRoomsApp.API.Controllers
                 await _repo.SaveAll();
 
                 return Ok(
-                    new {
+                    new
+                    {
                         id = block.Id,
                         error = ex.Message
                     }
