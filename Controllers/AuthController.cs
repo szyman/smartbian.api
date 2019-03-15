@@ -79,12 +79,14 @@ namespace SmartRoomsApp.API.Controllers
         [HttpPost("loginExtProvider")]
         public async Task<IActionResult> LoginExtProvider([FromBody] UserForLoginDto userForLoginDto)
         {
-            var user = await _userManager.FindByNameAsync(userForLoginDto.Username);
+            var separator = "__";
+            var fbUserName = userForLoginDto.Password + separator +  userForLoginDto.Username.Split(" ")[0];
+            var user = await _userManager.FindByNameAsync(fbUserName);
             if (user == null)
             {
                 var userToCreate = new User
                 {
-                    UserName = userForLoginDto.Username
+                    UserName = fbUserName
                 };
 
                 var result = await _userManager.CreateAsync(userToCreate, userForLoginDto.Password);
@@ -109,7 +111,8 @@ namespace SmartRoomsApp.API.Controllers
             }
 
             var appUser = await _userManager.Users.Include(b => b.Blocks)
-                        .FirstOrDefaultAsync(u => u.UserName == userForLoginDto.Username);
+                        .FirstOrDefaultAsync(u => u.UserName == fbUserName);
+            appUser.UserName = appUser.UserName.Split(separator)[1];
 
             return Ok(new
             {
