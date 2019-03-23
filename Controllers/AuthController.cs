@@ -81,6 +81,7 @@ namespace SmartRoomsApp.API.Controllers
         {
             var separator = "__";
             var fbUserName = userForLoginDto.Password + separator +  userForLoginDto.Username.Split(" ")[0];
+            var password = userForLoginDto.Password + "f@cebook";
             var user = await _userManager.FindByNameAsync(fbUserName);
             if (user == null)
             {
@@ -89,7 +90,7 @@ namespace SmartRoomsApp.API.Controllers
                     UserName = fbUserName
                 };
 
-                var result = await _userManager.CreateAsync(userToCreate, userForLoginDto.Password);
+                var result = await _userManager.CreateAsync(userToCreate, password);
 
                 if (!result.Succeeded)
                 {
@@ -102,7 +103,7 @@ namespace SmartRoomsApp.API.Controllers
             }
             else
             {
-                var result = await _signInManager.CheckPasswordSignInAsync(user, userForLoginDto.Password, false);
+                var result = await _signInManager.CheckPasswordSignInAsync(user, password, false);
 
                 if (!result.Succeeded)
                 {
