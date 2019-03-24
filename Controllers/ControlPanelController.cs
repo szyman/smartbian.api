@@ -73,7 +73,7 @@ namespace SmartRoomsApp.API.Controllers
                     return "python -V";
                 case "run_switch":
                     Block block = await _repo.GetBlock(itemId);
-                    if (block == null)
+                    if (block == null || block.ScriptFileName == null)
                         return "";
                     return "python " + block.ScriptFileName;
                 default:

@@ -25,6 +25,7 @@ using Microsoft.AspNetCore.Identity;
 using SmartRoomsApp.API.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
+using System.Net.WebSockets;
 
 namespace SmartRoomsApp.API
 {
@@ -92,12 +93,13 @@ namespace SmartRoomsApp.API
 
             services.BuildServiceProvider().GetService<DataContext>().Database.Migrate();
             services.AddTransient<Seed>();
+            services.AddTransient<WebsocketHandler>();
             services.AddScoped<ICombiningRepository, CombiningRepository>();
             services.AddScoped<ICloudStorageRepository, CloudStorageRepository>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, Seed seeder)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, Seed seeder, WebsocketHandler wsHandler)
         {
             if (env.IsDevelopment())
             {
@@ -127,11 +129,36 @@ namespace SmartRoomsApp.API
                     });
                 });
             }
-
-            seeder.SeedUSers();
             app.UseAuthentication();
-            app.UseDefaultFiles();
-            app.UseStaticFiles();
+            seeder.SeedUSers();
+
+            //WebSockets "ws://localhost:5000/ws"
+            var webSocketOptions = new WebSocketOptions()
+            {
+                KeepAliveInterval = TimeSpan.FromSeconds(120),
+                ReceiveBufferSize = 4 * 1024
+            };
+            app.UseWebSockets(webSocketOptions);
+            app.Use(async (context, next) =>
+            {
+                if (context.Request.Path == "/ws")
+                {
+                    if (context.WebSockets.IsWebSocketRequest)
+                    {
+                        WebSocket webSocket = await context.WebSockets.AcceptWebSocketAsync();
+                        await wsHandler.Echo(context, webSocket);
+                    }
+                    else
+                    {
+                        context.Response.StatusCode = 400;
+                    }
+                }
+                else
+                {
+                    await next();
+                }
+            });
+
             app.UseMvc(routes =>
             {
                 routes.MapSpaFallbackRoute(
@@ -139,6 +166,8 @@ namespace SmartRoomsApp.API
                     defaults: new { controller = "Fallback", action = "Index" }
                 );
             });
+            app.UseDefaultFiles();
+            app.UseStaticFiles();
         }
     }
 }
