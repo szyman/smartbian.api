@@ -26,6 +26,7 @@ using SmartRoomsApp.API.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using System.Net.WebSockets;
+using SmartRoomsApp.API.Service;
 
 namespace SmartRoomsApp.API
 {
@@ -43,7 +44,7 @@ namespace SmartRoomsApp.API
         {
             services.AddDbContext<DataContext>(
                 options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"))
-                    .ConfigureWarnings(w => w.Ignore(CoreEventId.IncludeIgnoredWarning))
+                    .ConfigureWarnings(w => w.Ignore(CoreEventId.IncludeIgnoredWarning)), ServiceLifetime.Singleton
             );
 
             IdentityBuilder builder = services.AddIdentityCore<User>(opt =>
@@ -96,6 +97,7 @@ namespace SmartRoomsApp.API
             services.AddTransient<WebsocketHandler>();
             services.AddScoped<ICombiningRepository, CombiningRepository>();
             services.AddScoped<ICloudStorageRepository, CloudStorageRepository>();
+            services.AddScoped<SshService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
