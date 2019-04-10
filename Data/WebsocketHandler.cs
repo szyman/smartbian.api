@@ -24,6 +24,9 @@ namespace SmartRoomsApp.API.Data
         {
             var buffer = new byte[1024 * 4];
             WebSocketReceiveResult result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+            if (result.CloseStatus.HasValue) {
+                return;
+            }
             string receivedString = Encoding.ASCII.GetString(buffer, 0, result.Count);
             string[] receivedData = receivedString.Split('/');
             int userId = Int32.Parse(receivedData[0]);
