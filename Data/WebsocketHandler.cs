@@ -24,7 +24,8 @@ namespace SmartRoomsApp.API.Data
         {
             var buffer = new byte[1024 * 4];
             WebSocketReceiveResult result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
-            if (result.CloseStatus.HasValue) {
+            if (result.CloseStatus.HasValue)
+            {
                 return;
             }
             string receivedString = Encoding.ASCII.GetString(buffer, 0, result.Count);
@@ -32,12 +33,17 @@ namespace SmartRoomsApp.API.Data
             int userId = Int32.Parse(receivedData[0]);
             int blockId = Int32.Parse(receivedData[1]);
             User user = await this._repo.GetUser(userId);
+            Block block = await this._repo.GetBlock(blockId);
+            if (block.ScriptFileName.Length == 0)
+            {
+                await webSocket.CloseAsync(WebSocketCloseStatus.InternalServerError, "No script", CancellationToken.None);
+                return;
+            }
 
             using (var sshClient = await this._ssh.getSshClient(user))
             {
                 try
                 {
-                    var scriptFileName = await this._repo.GetBlock(blockId);
                     if (!sshClient.IsConnected)
                     {
                         sshClient.Connect();
@@ -45,7 +51,7 @@ namespace SmartRoomsApp.API.Data
 
                     while (!result.CloseStatus.HasValue)
                     {
-                        var resultFile = this._ssh.executeCommand(sshClient, SshService.CommandTypeEnum.RunScript, scriptFileName.ScriptFileName);
+                        var resultFile = this._ssh.executeCommand(sshClient, SshService.CommandTypeEnum.RunScript, block.ScriptFileName);
                         byte[] resultBytes = Encoding.ASCII.GetBytes(resultFile.Result);
 
                         await webSocket.SendAsync(new ArraySegment<byte>(resultBytes, 0, resultBytes.Length), result.MessageType, result.EndOfMessage, CancellationToken.None);
@@ -56,7 +62,7 @@ namespace SmartRoomsApp.API.Data
                 }
                 catch (Exception ex)
                 {
-                    await webSocket.CloseAsync(WebSocketCloseStatus.InternalServerError, ex.Message.Substring(0,50), CancellationToken.None);
+                    await webSocket.CloseAsync(WebSocketCloseStatus.InternalServerError, ex.Message.Substring(0, 50), CancellationToken.None);
                 }
             }
 
