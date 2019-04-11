@@ -20,7 +20,7 @@ namespace SmartRoomsApp.API.Data
             this._ssh = ssh;
         }
 
-        public async Task Echo(HttpContext context, WebSocket webSocket)
+        public async Task receiver(HttpContext context, WebSocket webSocket)
         {
             var buffer = new byte[1024 * 4];
             WebSocketReceiveResult result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
@@ -56,7 +56,7 @@ namespace SmartRoomsApp.API.Data
                 }
                 catch (Exception ex)
                 {
-                    await webSocket.CloseAsync(WebSocketCloseStatus.InternalServerError, ex.Message, CancellationToken.None);
+                    await webSocket.CloseAsync(WebSocketCloseStatus.InternalServerError, ex.Message.Substring(0,50), CancellationToken.None);
                 }
             }
 

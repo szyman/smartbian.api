@@ -134,7 +134,6 @@ namespace SmartRoomsApp.API
             app.UseAuthentication();
             seeder.SeedUSers();
 
-            //WebSockets "ws://localhost:5000/ws"
             var webSocketOptions = new WebSocketOptions()
             {
                 KeepAliveInterval = TimeSpan.FromSeconds(120),
@@ -148,7 +147,7 @@ namespace SmartRoomsApp.API
                     if (context.WebSockets.IsWebSocketRequest)
                     {
                         WebSocket webSocket = await context.WebSockets.AcceptWebSocketAsync();
-                        await wsHandler.Echo(context, webSocket);
+                        await wsHandler.receiver(context, webSocket);
                     }
                     else
                     {

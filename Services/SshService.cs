@@ -24,13 +24,14 @@ namespace SmartRoomsApp.API.Service
             {
                 var stream = await _cloudStorage.downloadStreamFromBlobContainer(user.SshBlobName);
                 privateKeyFile = new PrivateKeyFile(stream);
+
+                return new SshClient(user.RaspHost, user.RaspUsername, privateKeyFile);
             }
             catch (Exception ex)
             {
                 throw ex;
             }
 
-            return new SshClient(user.RaspHost, user.RaspUsername, privateKeyFile);
         }
 
         public SshCommand executeCommand(SshClient client, CommandTypeEnum commandType, string scriptFileName)
@@ -43,7 +44,7 @@ namespace SmartRoomsApp.API.Service
 
                 return command;
             }
-            catch (SocketException ex)
+            catch (Exception ex)
             {
                 throw ex;
             }
