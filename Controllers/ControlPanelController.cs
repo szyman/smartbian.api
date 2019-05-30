@@ -77,7 +77,11 @@ namespace SmartRoomsApp.API.Controllers
                         return "";
                     return "python " + block.ScriptFileName;
                 case "video_streaming":
-                    return "raspivid -o - -t 0 -hf -w 640 -h 360 -fps 25|cvlc -vvv stream:///dev/stdin --sout '#standard{access=http,mux=ts,dst=:8090}' :demux=h264 | ffmpeg -i http://192.168.100.10:8090 -vcodec libx264 -f flv -r 25 -an rtmp://192.168.100.3:1935/live/stream";
+                    return "raspivid -o - -t 0 -hf -w 640 -h 360 -fps 25|cvlc -vvv stream:///dev/stdin --sout '#standard{access=http,mux=ts,dst=:8090}' :demux=h264 | ffmpeg -i http://localhost:8090 -vcodec libx264 -f flv -r 25 -an rtmp://192.168.100.3:1935/live/stream";
+                case "video_status":
+                    return "pidof raspivid ffmpeg";
+                case "video_stop":
+                    return "kill -9 `pidof raspivid ffmpeg`";
                 default:
                     return "";
             }
