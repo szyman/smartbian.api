@@ -13,6 +13,7 @@ using SmartRoomsApp.API.Dtos;
 using SmartRoomsApp.API.Models;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.AspNetCore.Hosting;
 
 namespace SmartRoomsApp.API.Controllers
 {
@@ -21,12 +22,23 @@ namespace SmartRoomsApp.API.Controllers
     public class ControlPanelController : ControllerBase
     {
         private static string RTMP_SECRET_KEY = "kochamOle";
+        private readonly string _rtmpServerHost;
+        private readonly string _rtmpPlaybackHost;
         private readonly ICombiningRepository _repo;
         private readonly ICloudStorageRepository _cloudStorage;
-        private SshCommand command;
 
-        public ControlPanelController(ICombiningRepository repo, ICloudStorageRepository cloudStorage)
+        public ControlPanelController(IHostingEnvironment env, ICombiningRepository repo, ICloudStorageRepository cloudStorage)
         {
+            if (env.IsDevelopment())
+            {
+                this._rtmpServerHost = "rtmp://192.168.100.3:1935";
+                this._rtmpPlaybackHost = "http://localhost:8000";
+            }
+            else
+            {
+                this._rtmpServerHost = "rtmp://52.232.96.188:1935";
+                this._rtmpPlaybackHost = "http://52.232.96.188:8000";
+            }
             this._repo = repo;
             this._cloudStorage = cloudStorage;
         }
@@ -38,7 +50,7 @@ namespace SmartRoomsApp.API.Controllers
                 return Unauthorized();
 
             string textToHash = $"/live/stream_{controlPanelForLogin.UserId}_{controlPanelForLogin.ItemId}-{_getTimestamp()}-{RTMP_SECRET_KEY}";
-            string url = $"http://localhost:8000/live/stream_{controlPanelForLogin.UserId}_{controlPanelForLogin.ItemId}.flv?sign={_getTimestamp()}-{_getMd5Hash(textToHash)}";
+            string url = $"{_rtmpPlaybackHost}/live/stream_{controlPanelForLogin.UserId}_{controlPanelForLogin.ItemId}.flv?sign={_getTimestamp()}-{_getMd5Hash(textToHash)}";
             return Ok(url);
 
         }
@@ -95,7 +107,7 @@ namespace SmartRoomsApp.API.Controllers
                 case "video_streaming":
                     string textToHash = $"/live/stream_{userId}_{itemId}-{_getTimestamp()}-{RTMP_SECRET_KEY}";
                     string secondPartLink = $"/live/stream_{userId}_{itemId}?sign={_getTimestamp()}-{_getMd5Hash(textToHash)}";
-                    return "raspivid -o - -t 0 -hf -w 640 -h 360 -fps 25|cvlc -vvv stream:///dev/stdin --sout '#standard{access=http,mux=ts,dst=:8090}' :demux=h264 | ffmpeg -i http://localhost:8090 -vcodec libx264 -f flv -r 25 -an rtmp://192.168.100.3:1935" + secondPartLink;
+                    return "raspivid -o - -t 0 -hf -w 640 -h 360 -fps 25|cvlc -vvv stream:///dev/stdin --sout '#standard{access=http,mux=ts,dst=:8090}' :demux=h264 | ffmpeg -i http://localhost:8090 -vcodec libx264 -f flv -r 25 -an " + _rtmpServerHost + secondPartLink;
                 case "video_status":
                     return "pidof raspivid ffmpeg";
                 case "video_stop":
