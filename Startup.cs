@@ -114,9 +114,8 @@ namespace SmartRoomsApp.API
             }
             else
             {
-                //TODO: Uncomment this lines
-                //app.UseHsts();
-                //app.UseHttpsRedirection();
+                app.UseHsts();
+                app.UseHttpsRedirection();
                 app.UseExceptionHandler(builder =>
                 {
                     builder.Run(async context =>
