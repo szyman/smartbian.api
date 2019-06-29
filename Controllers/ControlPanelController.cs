@@ -21,7 +21,6 @@ namespace SmartRoomsApp.API.Controllers
     [ApiController]
     public class ControlPanelController : ControllerBase
     {
-        private static string RTMP_SECRET_KEY = "kochamOle";
         private readonly string _rtmpServerHost;
         private readonly string _rtmpPlaybackHost;
         private readonly ICombiningRepository _repo;
@@ -49,8 +48,7 @@ namespace SmartRoomsApp.API.Controllers
             if (controlPanelForLogin.UserId != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
                 return Unauthorized();
 
-            string textToHash = $"/live/stream_{controlPanelForLogin.UserId}_{controlPanelForLogin.ItemId}-{_getTimestamp()}-{RTMP_SECRET_KEY}";
-            string url = $"{_rtmpPlaybackHost}/live/stream_{controlPanelForLogin.UserId}_{controlPanelForLogin.ItemId}.flv?sign={_getTimestamp()}-{_getMd5Hash(textToHash)}";
+            string url = $"{_rtmpPlaybackHost}/live/stream_{controlPanelForLogin.UserId}_{controlPanelForLogin.ItemId}/index.m3u8";
             return Ok(url);
 
         }
@@ -105,8 +103,7 @@ namespace SmartRoomsApp.API.Controllers
                         return "";
                     return "python " + block.ScriptFileName;
                 case "video_streaming":
-                    string textToHash = $"/live/stream_{userId}_{itemId}-{_getTimestamp()}-{RTMP_SECRET_KEY}";
-                    string secondPartLink = $"/live/stream_{userId}_{itemId}?sign={_getTimestamp()}-{_getMd5Hash(textToHash)}";
+                    string secondPartLink = $"/live/stream_{userId}_{itemId}";
                     return "raspivid -o - -t 0 -hf -w 640 -h 360 -fps 25|cvlc -vvv stream:///dev/stdin --sout '#standard{access=http,mux=ts,dst=:8090}' :demux=h264 | ffmpeg -i http://localhost:8090 -vcodec libx264 -f flv -r 25 -an " + _rtmpServerHost + secondPartLink;
                 case "video_status":
                     return "pidof raspivid ffmpeg";
