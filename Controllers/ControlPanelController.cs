@@ -35,8 +35,8 @@ namespace SmartRoomsApp.API.Controllers
             }
             else
             {
-                this._rtmpServerHost = "rtmp://13.80.182.218:1935";
-                this._rtmpPlaybackHost = "https://13.80.182.218:8443";
+                this._rtmpServerHost = "rtmp://40.68.134.134:1935";
+                this._rtmpPlaybackHost = "https://40.68.134.134:8443";
             }
             this._repo = repo;
             this._cloudStorage = cloudStorage;
