@@ -10,10 +10,10 @@ namespace SmartRoomsApp.API.Controllers
         public IActionResult Index(string challenge)
         {
             return PhysicalFile(
-                Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "index.html"),
-                "text/HTML"
-                // Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "sslFile"),
-                // "text/plain"
+                // Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "index.html"),
+                // "text/HTML"
+                Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "sslFile"),
+                "text/plain"
             );
         }
     }
