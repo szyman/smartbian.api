@@ -48,7 +48,7 @@ namespace SmartRoomsApp.API.Controllers
             if (controlPanelForLogin.UserId != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
                 return Unauthorized();
 
-            string url = $"{_rtmpPlaybackHost}/live/stream_{controlPanelForLogin.UserId}_{controlPanelForLogin.ItemId}/index.m3u8";
+            string url = $"{_rtmpPlaybackHost}/live/stream_{controlPanelForLogin.UserId}_{controlPanelForLogin.ItemId}.flv";
             return Ok(url);
 
         }
