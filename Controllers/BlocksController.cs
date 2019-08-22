@@ -107,8 +107,9 @@ namespace SmartRoomsApp.API.Controllers
                 return Unauthorized();
 
             User user = await _repo.GetUser(userId);
+            var userBlocks = user.Blocks;
             BlocksForDetailedDto blockForUpdate;
-            foreach (var block in user.Blocks)
+            foreach (var block in userBlocks)
             {
                 blockForUpdate = blocksForDetailedDto.Find(b => b.Id == block.Id);
                 _mapper.Map(blockForUpdate, block);
