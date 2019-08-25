@@ -78,9 +78,19 @@ namespace SmartRoomsApp.API.Controllers
                 try
                 {
                     var commandText = await this._getCommandAsync(controlPanelForLogin.CommandType, controlPanelForLogin.ItemId, controlPanelForLogin.UserId);
+                    if (String.IsNullOrEmpty(commandText))
+                    {
+                        return Ok("Missing script.");
+                    }
+
                     client.Connect();
                     SshCommand command = client.CreateCommand(commandText);
                     this._executeCommand(controlPanelForLogin.CommandType, command);
+                    var result = command.Result + command.Error;
+                    if (String.IsNullOrEmpty(result))
+                    {
+                        return Ok("Missing message. Add print() to script item.");
+                    }
 
                     return Ok(command.Result + command.Error);
                 }
@@ -99,7 +109,7 @@ namespace SmartRoomsApp.API.Controllers
                     return "python -V";
                 case "run_switch":
                     Block block = await _repo.GetBlock(itemId);
-                    if (block == null || block.ScriptFileName == null)
+                    if (block == null || String.IsNullOrEmpty(block.ScriptFileName))
                         return "";
                     return "python " + block.ScriptFileName;
                 case "video_streaming":
