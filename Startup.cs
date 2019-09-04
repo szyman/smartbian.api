@@ -44,7 +44,7 @@ namespace SmartRoomsApp.API
         {
             services.AddDbContext<DataContext>(
                 options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"))
-                    .ConfigureWarnings(w => w.Ignore(CoreEventId.IncludeIgnoredWarning)), ServiceLifetime.Singleton
+                    .ConfigureWarnings(w => w.Ignore(CoreEventId.IncludeIgnoredWarning))
             );
 
             IdentityBuilder builder = services.AddIdentityCore<User>(opt =>
