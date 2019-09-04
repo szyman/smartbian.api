@@ -79,6 +79,7 @@ namespace SmartRoomsApp.API
             });
             services.AddCors();
             services.AddAutoMapper();
+            services.AddSignalR();
             services.AddMvc(options =>
             {
                 var policy = new AuthorizationPolicyBuilder()
@@ -94,14 +95,14 @@ namespace SmartRoomsApp.API
 
             services.BuildServiceProvider().GetService<DataContext>().Database.Migrate();
             services.AddTransient<Seed>();
-            services.AddTransient<WebsocketHandler>();
             services.AddScoped<ICombiningRepository, CombiningRepository>();
             services.AddScoped<ICloudStorageRepository, CloudStorageRepository>();
             services.AddScoped<SshService>();
+            services.AddScoped<BlockStatusHub>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, Seed seeder, WebsocketHandler wsHandler)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, Seed seeder)
         {
             if (env.IsDevelopment())
             {
@@ -110,6 +111,7 @@ namespace SmartRoomsApp.API
                     options => options.WithOrigins("http://localhost:5000", "http://localhost:8080", "http://192.168.100.3:8080")
                         .AllowAnyMethod()
                         .AllowAnyHeader()
+                        .AllowCredentials()
                 );
             }
             else
@@ -131,6 +133,10 @@ namespace SmartRoomsApp.API
                 });
             }
             app.UseAuthentication();
+            app.UseSignalR(route =>
+            {
+                route.MapHub<BlockStatusHub>("/blockStatusHub");
+            });
             seeder.SeedUSers();
 
             var webSocketOptions = new WebSocketOptions()
@@ -139,25 +145,6 @@ namespace SmartRoomsApp.API
                 ReceiveBufferSize = 4 * 1024
             };
             app.UseWebSockets(webSocketOptions);
-            app.Use(async (context, next) =>
-            {
-                if (context.Request.Path == "/ws")
-                {
-                    if (context.WebSockets.IsWebSocketRequest)
-                    {
-                        WebSocket webSocket = await context.WebSockets.AcceptWebSocketAsync();
-                        await wsHandler.receiver(context, webSocket);
-                    }
-                    else
-                    {
-                        context.Response.StatusCode = 400;
-                    }
-                }
-                else
-                {
-                    await next();
-                }
-            });
 
             app.UseMvc(routes =>
             {

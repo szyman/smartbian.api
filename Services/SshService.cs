@@ -34,15 +34,20 @@ namespace SmartRoomsApp.API.Service
 
         }
 
-        public SshCommand executeCommand(SshClient client, CommandTypeEnum commandType, string scriptFileName)
+        public String executeCommand(SshClient client, CommandTypeEnum commandType, string scriptFileName)
         {
             try
             {
                 var commandText = this._getCommand(commandType, scriptFileName);
+                if (String.IsNullOrEmpty(commandText))
+                {
+                    return "Empty";
+                }
+
                 SshCommand command = client.CreateCommand(commandText);
                 command.Execute();
 
-                return command;
+                return command.Result + command.Error;
             }
             catch (Exception ex)
             {
@@ -57,7 +62,7 @@ namespace SmartRoomsApp.API.Service
                 case CommandTypeEnum.TestConnection:
                     return "python -V";
                 case CommandTypeEnum.RunScript:
-                    if (scriptFileName == null)
+                    if (String.IsNullOrEmpty(scriptFileName))
                         return "";
                     return "python " + scriptFileName;
                 default:
