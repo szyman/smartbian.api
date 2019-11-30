@@ -43,7 +43,7 @@ namespace SmartRoomsApp.API
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<DataContext>(
-                options => options.UseSqlite(Configuration.GetConnectionString("DefaultConnection"))
+                options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"))
                     .ConfigureWarnings(w => w.Ignore(CoreEventId.IncludeIgnoredWarning))
             );
 
