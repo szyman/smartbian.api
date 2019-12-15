@@ -30,8 +30,8 @@ namespace SmartRoomsApp.API.Controllers
         {
             if (env.IsDevelopment())
             {
-                this._rtmpServerHost = "rtmp://192.168.100.3:1935";
-                this._rtmpPlaybackHost = "http://localhost:8000";
+                this._rtmpServerHost = "rtmp://192.168.100.10:1935";
+                this._rtmpPlaybackHost = "http://192.168.100.10:8000";
             }
             else
             {
@@ -87,7 +87,7 @@ namespace SmartRoomsApp.API.Controllers
                     SshCommand command = client.CreateCommand(commandText);
                     this._executeCommand(controlPanelForLogin.CommandType, command);
                     var result = command.Result + command.Error;
-                    if (String.IsNullOrEmpty(result))
+                    if (String.IsNullOrEmpty(result) && controlPanelForLogin.IsRequireScript)
                     {
                         return Ok("Missing message. Add print() to script item.");
                     }
