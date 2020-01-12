@@ -1,7 +1,11 @@
 using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Net.Sockets;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Renci.SshNet;
 using SmartRoomsApp.API.Data;
@@ -17,25 +21,34 @@ namespace SmartRoomsApp.API.Controllers
     [ApiController]
     public class ControlPanelController : ControllerBase
     {
+        private readonly string _rtmpServerHost;
+        private readonly string _rtmpPlaybackHost;
         private readonly ICombiningRepository _repo;
         private readonly ICloudStorageRepository _cloudStorage;
 
         public ControlPanelController(IHostingEnvironment env, ICombiningRepository repo, ICloudStorageRepository cloudStorage)
         {
+            if (env.IsDevelopment())
+            {
+                this._rtmpServerHost = "rtmp://192.168.100.10:1935";
+                this._rtmpPlaybackHost = "http://192.168.100.10:8000";
+            }
+            else
+            {
+                this._rtmpServerHost = "rtmp://smartbian.westeurope.cloudapp.azure.com:1935";
+                this._rtmpPlaybackHost = "http://smartbian.westeurope.cloudapp.azure.com:8000";
+            }
             this._repo = repo;
             this._cloudStorage = cloudStorage;
         }
 
         [HttpPost("getVideoLink")]
-        public async Task<IActionResult> getVideoLinkAsync(ControlPanelForLoginDto controlPanelForLogin)
+        public IActionResult getVideoLink(ControlPanelForLoginDto controlPanelForLogin)
         {
             if (controlPanelForLogin.UserId != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
                 return Unauthorized();
 
-            User user = await _repo.GetUser(controlPanelForLogin.UserId);
-            string rtmpPlaybackHost = $"http://{user.RaspHost}:8000";
-
-            string url = $"{rtmpPlaybackHost}/live/stream_{controlPanelForLogin.UserId}_{controlPanelForLogin.ItemId}.flv";
+            string url = $"{_rtmpPlaybackHost}/live/stream_{controlPanelForLogin.UserId}_{controlPanelForLogin.ItemId}.flv";
             return Ok(url);
 
         }
@@ -64,7 +77,7 @@ namespace SmartRoomsApp.API.Controllers
             {
                 try
                 {
-                    var commandText = await this._getCommandAsync(controlPanelForLogin.CommandType, controlPanelForLogin.ItemId, controlPanelForLogin.UserId, user.RaspHost);
+                    var commandText = await this._getCommandAsync(controlPanelForLogin.CommandType, controlPanelForLogin.ItemId, controlPanelForLogin.UserId);
                     if (String.IsNullOrEmpty(commandText))
                     {
                         return Ok("Missing script.");
@@ -88,7 +101,7 @@ namespace SmartRoomsApp.API.Controllers
             }
         }
 
-        private async Task<string> _getCommandAsync(string CommandType, int itemId, int userId, string raspHost)
+        private async Task<string> _getCommandAsync(string CommandType, int itemId, int userId)
         {
             switch (CommandType)
             {
@@ -100,9 +113,8 @@ namespace SmartRoomsApp.API.Controllers
                         return "";
                     return "python " + block.ScriptFileName;
                 case "video_streaming":
-                    string rtmpServerHost = $"rtmp://{raspHost}:1935";
                     string secondPartLink = $"/live/stream_{userId}_{itemId}";
-                    return "raspivid -o - -t 0 -hf -w 640 -h 360 -fps 25|cvlc -vvv stream:///dev/stdin --sout '#standard{access=http,mux=ts,dst=:8090}' :demux=h264 | ffmpeg -i http://localhost:8090 -vcodec libx264 -f flv -r 25 -an " + rtmpServerHost + secondPartLink;
+                    return "raspivid -o - -t 0 -hf -w 640 -h 360 -fps 25|cvlc -vvv stream:///dev/stdin --sout '#standard{access=http,mux=ts,dst=:8090}' :demux=h264 | ffmpeg -i http://localhost:8090 -vcodec libx264 -f flv -r 25 -an " + _rtmpServerHost + secondPartLink;
                 case "video_status":
                     return "pidof raspivid ffmpeg";
                 case "video_stop":
