@@ -13,5 +13,9 @@
     <PackageReference Include="WindowsAzure.Storage" Version="9.3.3"/>
     <PackageReference Include="Microsoft.AspNet.SignalR" Version="2.4.1"/>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.Core" Version="2.1.14"/>
+    <PackageReference Include="Microsoft.Azure.IoTHub.IoTHubClient" Version="1.2.11"/>
+    <PackageReference Include="Microsoft.Azure.EventHubs" Version="4.1.0"/>
+    <PackageReference Include="Microsoft.Azure.Devices.Client" Version="1.21.3"/>
+    <PackageReference Include="Microsoft.Azure.ServiceBus" Version="4.1.1"/>
   </ItemGroup>
 </Project>

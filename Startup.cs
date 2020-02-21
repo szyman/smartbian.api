@@ -98,7 +98,6 @@ namespace SmartRoomsApp.API
             services.AddScoped<ICombiningRepository, CombiningRepository>();
             services.AddScoped<ICloudStorageRepository, CloudStorageRepository>();
             services.AddScoped<SshService>();
-            services.AddScoped<BlockStatusHub>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -135,7 +134,7 @@ namespace SmartRoomsApp.API
             app.UseAuthentication();
             app.UseSignalR(route =>
             {
-                route.MapHub<BlockStatusHub>("/blockStatusHub");
+                route.MapHub<IoTQueueHub>("/ioTQueueHub");
             });
             seeder.SeedUSers();
 
