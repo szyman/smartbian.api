@@ -14,9 +14,9 @@ namespace SmartRoomsApp.API.Helpers
         private readonly CloudStorageAccount _account;
         private readonly CloudBlobClient _serviceClient;
 
-        public CloudStorageRepository(IHostingEnvironment env, IConfiguration configuration)
+        public CloudStorageRepository(IWebHostEnvironment env, IConfiguration configuration)
         {
-            if (env.IsDevelopment())
+            if (env.EnvironmentName == "Development")
             {
                 _account = CloudStorageAccount.DevelopmentStorageAccount;
             }

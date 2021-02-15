@@ -1,11 +1,7 @@
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Net.Sockets;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Renci.SshNet;
 using SmartRoomsApp.API.Data;
@@ -26,9 +22,9 @@ namespace SmartRoomsApp.API.Controllers
         private readonly ICombiningRepository _repo;
         private readonly ICloudStorageRepository _cloudStorage;
 
-        public ControlPanelController(IHostingEnvironment env, ICombiningRepository repo, ICloudStorageRepository cloudStorage)
+        public ControlPanelController(IWebHostEnvironment env, ICombiningRepository repo, ICloudStorageRepository cloudStorage)
         {
-            if (env.IsDevelopment())
+            if (env.EnvironmentName == "Development")
             {
                 this._rtmpServerHost = "rtmp://192.168.100.10:1935";
                 this._rtmpPlaybackHost = "http://192.168.100.10:8000";
