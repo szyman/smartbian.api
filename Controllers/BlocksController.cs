@@ -7,11 +7,15 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Renci.SshNet;
 using SmartRoomsApp.API.Data;
 using SmartRoomsApp.API.Dtos;
+using SmartRoomsApp.API.Features.Blocks.AddItemsForUser;
+using SmartRoomsApp.API.Features.Blocks.GetItem;
+using SmartRoomsApp.API.Features.Blocks.GetItemsForUser;
 using SmartRoomsApp.API.Models;
 
 namespace SmartRoomsApp.API.Controllers
@@ -23,24 +27,25 @@ namespace SmartRoomsApp.API.Controllers
         private readonly ICombiningRepository _repo;
         private readonly IMapper _mapper;
         private readonly ICloudStorageRepository _cloudStorage;
+        private readonly IMediator _mediator;
 
-        public BlocksController(ICombiningRepository repo, IMapper mapper, ICloudStorageRepository cloudStorage)
+        public BlocksController(ICombiningRepository repo, IMapper mapper, ICloudStorageRepository cloudStorage, IMediator mediator)
         {
             this._repo = repo;
             this._mapper = mapper;
             this._cloudStorage = cloudStorage;
+            this._mediator = mediator;
         }
 
-        [HttpGet("{blockId}")]
-        public async Task<IActionResult> GetItem(int blockId)
+        [HttpGet]
+        public async Task<IActionResult> GetItem([FromQuery] GetItemQuery query)
         {
-            Block block = await _repo.GetBlock(blockId);
+            var result = await _mediator.Send(query);
 
-            if (block.UserId != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
+            if (result.UserId != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
                 return Unauthorized();
 
-            var blockForUpdate = _mapper.Map<BlockForUpdateDto>(block);
-            return Ok(blockForUpdate);
+            return Ok(result);
         }
 
         [HttpDelete("{blockId}")]
@@ -88,16 +93,15 @@ namespace SmartRoomsApp.API.Controllers
             }
         }
 
-        [HttpGet("all/{userId}")]
-        public async Task<IActionResult> GetItems(int userId)
+        [HttpGet("allForUser")]
+        public async Task<IActionResult> GetItems([FromQuery] GetItemsForUserQuery query)
         {
-            if (userId != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
+            if (query.UserId != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
                 return Unauthorized();
 
-            var user = await _repo.GetUser(userId);
-            var blocksToReturn = _mapper.Map<IEnumerable<BlocksForDetailedDto>>(user.Blocks);
+            var result = await _mediator.Send(query);
 
-            return Ok(blocksToReturn);
+            return Ok(result);
         }
 
         [HttpPost("{userId}")]
@@ -120,22 +124,19 @@ namespace SmartRoomsApp.API.Controllers
             return Ok(blockUpdatedList);
         }
 
-        [HttpPost("addNewItems/{userId}")]
-        public async Task<IActionResult> AddNewItems(int userId, [FromBody] List<BlocksForNewDetailedDto> blocksForNewDetailedDto)
+        [HttpPost("addNewItems")]
+        public async Task<IActionResult> AddNewItems([FromQuery] int userId, [FromBody] List<BlocksForNewDetailedDto> blocksForNewDetailedDto)
         {
             if (userId != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
                 return Unauthorized();
 
-            List<Block> blocks = _mapper.Map<List<Block>>(blocksForNewDetailedDto);
-            User user = await _repo.GetUser(userId);
-            blocks.ForEach(block =>
+            var command = new AddItemsForUserCommand
             {
-                user.Blocks.Add(block);
-            });
-
-            await _repo.SaveAll();
-            var blockUpdatedList = _mapper.Map<List<BlocksForDetailedDto>>(user.Blocks);
-            return Ok(blockUpdatedList);
+                UserId = userId,
+                blocks = blocksForNewDetailedDto
+            };
+            var result = await _mediator.Send(command);
+            return Ok(result);
         }
 
         [HttpPut("{blockId}")]
@@ -178,7 +179,7 @@ namespace SmartRoomsApp.API.Controllers
         }
 
         [HttpPut("uploadScript/{blockId}")]
-        public async Task<IActionResult> uploadScriptFile(int blockId, [FromBody]string script)
+        public async Task<IActionResult> uploadScriptFile(int blockId, [FromBody] string script)
         {
             Block block = await _repo.GetBlock(blockId);
 
