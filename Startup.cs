@@ -19,6 +19,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using SmartRoomsApp.API.Service;
 using Microsoft.OpenApi.Models;
+using MediatR;
 
 namespace SmartRoomsApp.API
 {
@@ -84,6 +85,7 @@ namespace SmartRoomsApp.API
                 opt.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
             });
 
+            services.AddMediatR(typeof(Startup));
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "SmartRoomApp API", Version = "v1" });

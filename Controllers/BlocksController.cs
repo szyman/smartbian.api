@@ -7,11 +7,13 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Renci.SshNet;
 using SmartRoomsApp.API.Data;
 using SmartRoomsApp.API.Dtos;
+using SmartRoomsApp.API.Features.Blocks.GetItem;
 using SmartRoomsApp.API.Models;
 
 namespace SmartRoomsApp.API.Controllers
@@ -23,24 +25,25 @@ namespace SmartRoomsApp.API.Controllers
         private readonly ICombiningRepository _repo;
         private readonly IMapper _mapper;
         private readonly ICloudStorageRepository _cloudStorage;
+        private readonly IMediator _mediator;
 
-        public BlocksController(ICombiningRepository repo, IMapper mapper, ICloudStorageRepository cloudStorage)
+        public BlocksController(ICombiningRepository repo, IMapper mapper, ICloudStorageRepository cloudStorage, IMediator mediator)
         {
             this._repo = repo;
             this._mapper = mapper;
             this._cloudStorage = cloudStorage;
+            this._mediator = mediator;
         }
 
-        [HttpGet("{blockId}")]
-        public async Task<IActionResult> GetItem(int blockId)
+        [HttpGet]
+        public async Task<IActionResult> GetItem([FromQuery] GetItemQuery query)
         {
-            Block block = await _repo.GetBlock(blockId);
+            var result = await _mediator.Send(query);
 
-            if (block.UserId != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
+            if (result.UserId != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
                 return Unauthorized();
 
-            var blockForUpdate = _mapper.Map<BlockForUpdateDto>(block);
-            return Ok(blockForUpdate);
+            return Ok(result);
         }
 
         [HttpDelete("{blockId}")]
@@ -178,7 +181,7 @@ namespace SmartRoomsApp.API.Controllers
         }
 
         [HttpPut("uploadScript/{blockId}")]
-        public async Task<IActionResult> uploadScriptFile(int blockId, [FromBody]string script)
+        public async Task<IActionResult> uploadScriptFile(int blockId, [FromBody] string script)
         {
             Block block = await _repo.GetBlock(blockId);
 
