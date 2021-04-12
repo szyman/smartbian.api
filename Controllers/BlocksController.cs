@@ -14,6 +14,7 @@ using Renci.SshNet;
 using SmartRoomsApp.API.Data;
 using SmartRoomsApp.API.Dtos;
 using SmartRoomsApp.API.Features.Blocks.GetItem;
+using SmartRoomsApp.API.Features.Blocks.GetItemsForUser;
 using SmartRoomsApp.API.Models;
 
 namespace SmartRoomsApp.API.Controllers
@@ -91,16 +92,15 @@ namespace SmartRoomsApp.API.Controllers
             }
         }
 
-        [HttpGet("all/{userId}")]
-        public async Task<IActionResult> GetItems(int userId)
+        [HttpGet("AllForUser")]
+        public async Task<IActionResult> GetItems([FromQuery] GetItemsForUserQuery query)
         {
-            if (userId != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
+            if (query.UserId != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
                 return Unauthorized();
 
-            var user = await _repo.GetUser(userId);
-            var blocksToReturn = _mapper.Map<IEnumerable<BlocksForDetailedDto>>(user.Blocks);
+            var result = await _mediator.Send(query);
 
-            return Ok(blocksToReturn);
+            return Ok(result);
         }
 
         [HttpPost("{userId}")]
