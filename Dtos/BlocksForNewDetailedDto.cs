@@ -8,6 +8,5 @@ namespace SmartRoomsApp.API.Dtos
         public int Type { get; set; }
         public string Title { get; set; }
         public string ScriptFileName { get; set; }
-        public int UserId { get; set; }
     }
 }

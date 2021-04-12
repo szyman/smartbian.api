@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Mvc;
 using Renci.SshNet;
 using SmartRoomsApp.API.Data;
 using SmartRoomsApp.API.Dtos;
+using SmartRoomsApp.API.Features.Blocks.AddItemsForUser;
 using SmartRoomsApp.API.Features.Blocks.GetItem;
 using SmartRoomsApp.API.Features.Blocks.GetItemsForUser;
 using SmartRoomsApp.API.Models;
@@ -92,7 +93,7 @@ namespace SmartRoomsApp.API.Controllers
             }
         }
 
-        [HttpGet("AllForUser")]
+        [HttpGet("allForUser")]
         public async Task<IActionResult> GetItems([FromQuery] GetItemsForUserQuery query)
         {
             if (query.UserId != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
@@ -123,22 +124,19 @@ namespace SmartRoomsApp.API.Controllers
             return Ok(blockUpdatedList);
         }
 
-        [HttpPost("addNewItems/{userId}")]
-        public async Task<IActionResult> AddNewItems(int userId, [FromBody] List<BlocksForNewDetailedDto> blocksForNewDetailedDto)
+        [HttpPost("addNewItems")]
+        public async Task<IActionResult> AddNewItems([FromQuery] int userId, [FromBody] List<BlocksForNewDetailedDto> blocksForNewDetailedDto)
         {
             if (userId != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
                 return Unauthorized();
 
-            List<Block> blocks = _mapper.Map<List<Block>>(blocksForNewDetailedDto);
-            User user = await _repo.GetUser(userId);
-            blocks.ForEach(block =>
+            var command = new AddItemsForUserCommand
             {
-                user.Blocks.Add(block);
-            });
-
-            await _repo.SaveAll();
-            var blockUpdatedList = _mapper.Map<List<BlocksForDetailedDto>>(user.Blocks);
-            return Ok(blockUpdatedList);
+                UserId = userId,
+                blocks = blocksForNewDetailedDto
+            };
+            var result = await _mediator.Send(command);
+            return Ok(result);
         }
 
         [HttpPut("{blockId}")]
